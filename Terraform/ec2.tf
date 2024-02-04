@@ -1,5 +1,5 @@
 resource "aws_instance" "ec2" {
-  ami                    = "var.ami"
+  ami                    = var.ami
   instance_type          = "t2.large"
   key_name               = var.key-name
   subnet_id              = aws_subnet.public-subnet.id

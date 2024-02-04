@@ -19,13 +19,13 @@ if ./create-eks.sh && [ $? -eq 0 ]; then
 
    echo " change prometheus service to NodePort "
    kubectl patch svc stable-kube-prometheus-sta-prometheus -n ${NAMESPACE} -p '{"spec": {"type": "LoadBalancer"}}'
-
+   kubectl patch svc stable-grafana -n ${NAMESPACE} -p '{"spec": {"type": "LoadBalancer"}}'
    echo "--------------------Creating External-IP--------------------"
    sleep 10s
 
-   echo "--------------------Argocd Ex-URL--------------------"
+   echo "--------------------Prometheus & Grafana  Ex-URL--------------------"
    kubectl get service stable-kube-prometheus-sta-prometheus -n ${NAMESPACE} | awk '{print $4}'
-
+   kubectl get service stable-grafana -n ${NAMESPACE} | awk '{print $4}'
    
 
 else

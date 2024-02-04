@@ -1,0 +1,6 @@
+promethues port = 9090
+grafana login :
+  admin
+  prom-operator
+
+- k8s dashboard " 6417
