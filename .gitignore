@@ -1,0 +1,6 @@
+*.terraform
+Terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/*
+.terraform
+package*.json
+my-key.pem
+file-system-check.txt
