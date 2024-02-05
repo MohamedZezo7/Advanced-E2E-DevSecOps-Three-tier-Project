@@ -4,3 +4,6 @@ grafana login :
   prom-operator
 
 - k8s dashboard " 6417
+
+---------------------
+sonar-token = squ_76414ea3c78079cac01e091de6628e73ebdfeec3
