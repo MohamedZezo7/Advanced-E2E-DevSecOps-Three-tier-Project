@@ -4,4 +4,3 @@ Terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/*
 my-key.pem
 someprojectinfo.*
 file*.txt
-jenkins-plugins.txt
