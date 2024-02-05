@@ -4,7 +4,6 @@ pipeline {
     tools {
         jdk 'jdk'
         nodejs 'nodejs'
-        
     }
 
     environment {
@@ -57,11 +56,11 @@ pipeline {
 
         stage('Trivy File Scan') {
             steps {
-                dir ('Application-Code/frontend')
+                dir ('Application-Code/frontend'){
                 sh 'trivy fs . > ../../trivyfs-frontend-job-${BUILD_NUMBER}-${BUILD_ID}.txt'
             }
+          }
         }
-
         stage('Docker Image Build') {
             steps {
                 script {
@@ -79,8 +78,8 @@ pipeline {
                 sh "trivy image ${AWS_ECR_REPO_NAME} > trivyimage-frontend-${BUILD_NUMBER}-${BUILD_ID}.txt"
             }
         }
-
-        stage("Push Image to ECR") {
+        
+        stage("ECR Image Pushing") {
             steps {
                 script {
                         sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI}'
