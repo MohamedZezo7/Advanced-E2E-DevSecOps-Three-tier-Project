@@ -3,3 +3,6 @@ Terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/*
 .terraform
 my-key.pem
 file-system-check.txt
+someprojectinfo.*
+file*.txt
+jenkins-plugins.txt

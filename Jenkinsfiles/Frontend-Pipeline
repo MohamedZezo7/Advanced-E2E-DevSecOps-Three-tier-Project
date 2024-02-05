@@ -1,68 +1,86 @@
 pipeline {
     agent any
+
     tools {
         jdk 'jdk'
         nodejs 'nodejs'
+        
     }
-    environment  {
-        SCANNER_HOME=tool 'sonar-scanner'
+
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
-        AWS_ECR_REPO_NAME = credentials('ECR_REPO2')
+        AWS_ECR_REPO_NAME = credentials('ECR_REPO1')
         AWS_DEFAULT_REGION = 'us-east-1'
         REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/"
+        GIT_REPO_NAME = 'Advanced-E2E-DevSecOps-Three-tier-Project'
+        GIT_USER_NAME = 'MohamedZezo7'
     }
 
     stages {
-        stage('CleanWS') {
+        stage('Clean Workspace') {
             steps {
-                cleanWS()
+                cleanWs()
             }
         }
-        
+
         stage('Checkout Git') {
             steps {
                 git branch: 'main', url: 'https://github.com/MohamedZezo7/Advanced-E2E-DevSecOps-Three-tier-Project.git'
             }
         }
-        
-        stage('Sonarqube-Analysis') {
+
+        stage('Sonarqube Analysis') {
             steps {
-                dir('Application-Code/backend') {
-                withSonarQubeEnv('sonar-server') {
-                        sh ''' $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectName=three-tier-backend \
-                        -Dsonar.projectKey=three-tier-backend '''
-                 }
-              }
-            }
-        }
-        
-        stage('Quality Check') {
-            steps {
-                script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                dir('Application-Code/frontend') {
+                    withSonarQubeEnv('sonar-server') {
+                        sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=three-tier-frontend -Dsonar.projectKey=three-tier-frontend"
+                    }
                 }
             }
         }
-        
-       stage('OWASP Dependency-Check Scan') {
+
+        stage('Quality Check') {
             steps {
-                dir('Application-Code/backend') {
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+            }
+        }
+
+        stage('OWASP Dependency-Check Scan') {
+            steps {
+                dir('Application-Code/frontend') {
                     dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
                     dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
                 }
             }
         }
-        
+
         stage('Trivy File Scan') {
             steps {
-                dir('Application-Code/backend') {
-                    sh 'trivy fs . > trivyfs-backend-job-${BUILD_NUMBER}-${BUILD_ID}.txt'
+                dir ('Application-Code/frontend')
+                sh 'trivy fs . > ../../trivyfs-frontend-job-${BUILD_NUMBER}-${BUILD_ID}.txt'
+            }
+        }
+
+        stage('Docker Image Build') {
+            steps {
+                script {
+                    dir('Application-Code/frontend') {
+                        sh 'docker system prune -f'
+                        sh 'docker container prune -f'
+                        sh "docker build -t ${AWS_ECR_REPO_NAME} ."
+                    }
                 }
             }
         }
-        
-        stage("ECR Image Pushing") {
+
+        stage('Trivy Scan Image') {
+            steps {
+                sh "trivy image ${AWS_ECR_REPO_NAME} > trivyimage-frontend-${BUILD_NUMBER}-${BUILD_ID}.txt"
+            }
+        }
+
+        stage("Push Image to ECR") {
             steps {
                 script {
                         sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REPOSITORY_URI}'
@@ -71,31 +89,41 @@ pipeline {
                 }
             }
         }
-    
-        
-        
+
         stage('Update Deployment file') {
-            environment {
-                GIT_REPO_NAME = "Advanced-E2E-DevSecOps-Three-tier-Project "
-                GIT_USER_NAME = "MohamedZezo7"
-            }
             steps {
-                dir('Kubernetes-Manifests-file/Backend') {
+                dir('Kubernetes-Manifests-file/Frontend') {
                     withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                        sh '''
+                        script {
+                            sh '''
                             git config user.email "mohamedabdelazizk10@gmail.com"
                             git config user.name "Mohamed Abdelaziz"
                             BUILD_NUMBER=${BUILD_NUMBER}
                             echo $BUILD_NUMBER
-                            imageTag=$(grep -oP '(?<=backend:)[^ ]+' deployment.yaml)
+                            imageTag=$(grep -oP '(?<=frontend:)[^ ]+' deployment.yaml)
                             echo $imageTag
                             sed -i "s/${AWS_ECR_REPO_NAME}:${imageTag}/${AWS_ECR_REPO_NAME}:${BUILD_NUMBER}/" deployment.yaml
                             git add deployment.yaml
                             git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
                             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                         '''
+                        }
                     }
                 }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                emailext attachLog: true,
+                    subject: "'${currentBuild.result}'",
+                    body: "Project: ${env.JOB_NAME}<br/>" +
+                        "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                        "URL: ${env.BUILD_URL}<br/>",
+                    to: 'mohamedabdelazizk10@gmail.com',
+                    attachmentsPattern: 'trivyfs-frontend*.txt, trivyimage*.txt'
             }
         }
     }
