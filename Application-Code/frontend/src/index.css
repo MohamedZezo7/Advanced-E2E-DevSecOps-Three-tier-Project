@@ -13,7 +13,7 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    background: linear-gradient(135deg, #53ccbc, #a777e3);
 }
 
 /* Optional: Add some more global styles for typography */
@@ -27,7 +27,7 @@ a {
 }
 
 a:hover {
-    color: #6e8efb;
+    color: #67beac;
 }
 
 /* Styling for any code elements */

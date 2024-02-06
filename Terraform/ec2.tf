@@ -11,6 +11,6 @@ resource "aws_instance" "ec2" {
   user_data = templatefile("./script.sh", {})
 
   tags = {
-    Name = "var.instance-name"
+    Name = var.instance-name
   }
 }
