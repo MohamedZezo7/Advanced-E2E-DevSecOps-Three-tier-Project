@@ -34,7 +34,3 @@ else
    echo " Eks is not working "
 fi
 
-
-helm repo add Prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring

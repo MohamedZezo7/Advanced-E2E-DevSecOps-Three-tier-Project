@@ -1,6 +1,6 @@
 # Three-Tier Web Application Deployment on AWS EKS using AWS EKS, ArgoCD, Prometheus, Grafana, and Jenkins
 
-![Three-Tier Banner](assets/Three-Tier.gif)
+![Three-Tier Banner](assets/Zezo.png)
 
 Welcome to the Three-Tier Web Application Deployment project! 🚀
 
@@ -39,6 +39,12 @@ The `Kubernetes-Manifests-Files` directory holds Kubernetes manifests for deploy
 - Private ECR repositories for secure image management
 - Helm charts for efficient monitoring setup
 - GitOps with ArgoCD - the cherry on top!
+
+Getting Started
+
+To get started with this project, refer to our comprehensive guide that walks you through IAM user setup, infrastructure provisioning, CI/CD pipeline configuration, EKS cluster creation, and more.
+
+https://medium.com/@mohamedabdelazizk10/complete-end-to-end-devsecops-kubernetes-three-tier-project-using-aws-eks-argocd-prometheus-0f1cfdcfe4c3
 
 📈 **The journey covered everything from setting up tools to deploying a Three-Tier app, ensuring data persistence, and implementing CI/CD pipelines.**
 
