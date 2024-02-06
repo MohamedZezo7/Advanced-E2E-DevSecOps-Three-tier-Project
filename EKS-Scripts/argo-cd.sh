@@ -17,7 +17,7 @@ if ./create-eks.sh && [ $? -eq 0 ]; then
    echo " Wait Pods to Start "
    sleep 2m
 
-   echo " change argocd service to NodePort "
+   echo " change argocd service to LOAD Balancer "
    kubectl patch svc ${RELEASE_NAME}-argocd-server -n ${NAMESPACE} -p '{"spec": {"type": "LoadBalancer"}}'
 
    echo "--------------------Creating External-IP--------------------"
@@ -33,3 +33,8 @@ if ./create-eks.sh && [ $? -eq 0 ]; then
 else
    echo " Eks is not working "
 fi
+
+
+helm repo add Prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring
